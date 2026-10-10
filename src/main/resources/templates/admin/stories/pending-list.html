@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Duyệt Truyện Chờ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .sidebar { min-height: 100vh; background: #343a40; color: white; }
+        .sidebar a { color: #d1d1d1; text-decoration: none; padding: 10px 20px; display: block; }
+        .sidebar a:hover { background: #495057; color: white; }
+        .active-link { background: #0d6efd !important; color: white !important; }
+
+        /* Cố định kích thước ảnh bìa đồng bộ với story-index */
+        .thumb-img {
+            width: 60px;           /* Chiều rộng cố định */
+            height: 85px;          /* Chiều cao cố định (tỉ lệ chuẩn 2:3) */
+            object-fit: cover;      /* Cắt ảnh vừa khung, không làm méo ảnh */
+            border-radius: 4px;    /* Bo góc nhẹ cho đẹp */
+            border: 1px solid #dee2e6; /* Thêm viền mỏng */
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{admin/fragments/layout :: sidebar}"></div>
+
+        <main class="col-md-10 p-4">
+            <div class="card shadow-sm">
+
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+                    <h3 class="mb-0"><i class="bi bi-shield-check me-2 text-warning"></i>Truyện Chờ Phê Duyệt</h3>
+
+                    <div class="d-flex gap-2">
+                        <a href="/admin/stories" class="btn btn-primary btn-sm">
+                            <i class="bi bi-list-task me-1"></i> Tất cả truyện
+                        </a>
+                        <a href="/" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-house me-1"></i> Về Trang Chủ
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+
+                    <div th:if="${successMessage}" class="alert alert-success py-2" role="alert" th:text="${successMessage}"></div>
+                    <div th:if="${errorMessage}" class="alert alert-danger py-2" role="alert" th:text="${errorMessage}"></div>
+
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Bìa</th>
+                            <th>Thông tin truyện</th>
+                            <th>Ngày đăng</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Hành động</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="story : ${stories}">
+                            <td>
+                                <img th:src="${story.thumbnailUrl != null && !story.thumbnailUrl.isEmpty() ? story.thumbnailUrl : 'https://via.placeholder.com/60x85'}"
+                                     class="thumb-img shadow-sm" alt="cover">
+                            </td>
+                            <td>
+                                <a th:href="@{/story/{id}(id=${story.id})}"
+                                   class="fw-bold text-decoration-none text-dark"
+                                   th:text="${story.title}"
+                                   target="_blank"
+                                   title="Xem chi tiết truyện">Tên truyện</a>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-person me-1"></i>Người đăng: <span class="fw-semibold" th:text="${story.uploader?.userName ?: 'Ẩn danh'}">Uploader</span>
+                                </small>
+                            </td>
+                            <td>
+                                <span class="text-secondary" th:text="${#temporals.format(story.createdAt, 'dd-MM-yyyy')}">18-05-2026</span>
+                            </td>
+                            <td>
+                                <div th:switch="${story.approvalStatus?.name() ?: 'PENDING'}">
+                                    <span th:case="'PENDING'" class="fw-bold text-warning"><i class="bi bi-clock-history"></i> PENDING</span>
+                                    <span th:case="'APPROVED'" class="fw-bold text-success"><i class="bi bi-check-circle"></i> APPROVED</span>
+                                    <span th:case="'REJECTED'" class="fw-bold text-danger"><i class="bi bi-x-circle"></i> REJECTED</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <form th:action="@{/admin/stories/review/{id}(id=${story.id})}" method="post" class="d-inline">
+                                        <input type="hidden" name="action" value="approve">
+                                        <button type="submit" class="btn btn-sm btn-outline-success"
+                                                th:disabled="${story.approvalStatus?.name() == 'APPROVED'}"
+                                                onclick="return confirm('Xác nhận duyệt xuất bản bộ truyện này?')">
+                                            <i class="bi bi-check2"></i> Duyệt
+                                        </button>
+                                    </form>
+
+                                    <form th:action="@{/admin/stories/review/{id}(id=${story.id})}" method="post" class="d-inline">
+                                        <input type="hidden" name="action" value="reject">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                th:disabled="${story.approvalStatus?.name() == 'REJECTED'}"
+                                                onclick="return confirm('Xác nhận từ chối bộ truyện này?')">
+                                            <i class="bi bi-x-circle"></i> Từ chối
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${stories.isEmpty()}">
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                Không có truyện nào đang nằm trong danh sách chờ duyệt.
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

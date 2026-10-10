@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Hồ sơ cá nhân</title>
+    <th:block th:replace="~{user/fragments/header :: header_resources}"></th:block>
+
+    <meta th:if="${_csrf}" name="_csrf" th:content="${_csrf.token}"/>
+    <meta th:if="${_csrf}" name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+    <style>
+        .profile-header {
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #30363d;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .profile-banner {
+            height: 250px;
+            position: relative;
+            background-color: #cccccc;
+            background-position: center !important;
+            background-size: cover !important;
+        }
+
+        /* Biến button thành label để click xuyên thấu vào input file */
+        .btn-change-banner, .btn-change-avatar {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-change-banner {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0,0,0,0.4);
+            color: white;
+            border-radius: 6px;
+            padding: 4px 10px;
+            transition: 0.3s;
+        }
+
+        .profile-info-bar {
+            position: relative;
+            min-height: 80px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            margin-top: -70px;
+            z-index: 5;
+        }
+
+        .profile-avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 6px solid #ffffff;
+            object-fit: cover;
+            background-color: #21262d;
+        }
+
+        .btn-change-avatar {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: #21262d;
+            color: white;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+        }
+
+        .btn-change-avatar:hover, .btn-change-banner:hover {
+            background: #30363d;
+        }
+
+        .btn-signin-custom {
+            background-color: #6e40c9;
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body style="background-color: #0d1117; color: white;">
+
+<div th:replace="~{user/fragments/header :: user_navbar}"></div>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+
+            <div class="profile-header mb-4">
+
+                <div class="profile-banner"
+                     th:style="'background-image: url(\'' + (${user.bannerUrl != null} ? ${user.bannerUrl} : '/images/default-banner.jpg') + '\');'">
+
+
+                    <label for="bannerInput" class="btn-change-banner">
+                        <i class="bi bi-camera me-1"></i> Thay ảnh bìa
+                    </label>
+                    <input type="file" id="bannerInput" style="display: none;" accept="image/*" onchange="uploadImage('banner')">
+                </div>
+
+                <div class="profile-info-bar d-flex align-items-end px-4 pb-3">
+
+                    <div class="avatar-wrapper">
+                        <img th:src="${user.avatarUrl != null ? user.avatarUrl : '/images/default-avatar.png'}"
+                             class="profile-avatar" id="avatarPreview">
+
+                        <label for="avatarInput" class="btn-change-avatar">
+                            <i class="bi bi-camera"></i>
+                        </label>
+                        <input type="file" id="avatarInput" style="display: none;" accept="image/*" onchange="uploadImage('avatar')">
+                    </div>
+
+                    <div class="ms-3 flex-grow-1 d-flex justify-content-between align-items-center mb-1">
+                        <div class="user-meta">
+                            <h4 class="fw-bold mb-0 text-black"
+                                th:text="${user.fullName != null ? user.fullName : #authentication.name}">Username
+                            </h4>
+
+                            <p class="small mb-0" style="color: #adb5bd;">
+                                <span th:if="${user.role != null && user.role.roleName == 'ROLE_ADMIN'}" style="color: #f85149; font-weight: bold;">Quản trị viên</span>
+                                <span th:unless="${user.role != null && user.role.roleName == 'ROLE_ADMIN'}">Thành viên</span>
+                            </p>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a th:href="@{/user/profile/edit}" class="btn btn-signin-custom btn-sm">Chỉnh sửa hồ sơ</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="row">
+
+                <div class="col-md-4">
+                    <div class="card mb-4" style="background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; color: white;">
+                        <div class="card-header border-bottom border-secondary">
+                            <h6 class="mb-0 fw-bold"><i class="bi bi-person-lines-fill me-2"></i>Giới thiệu</h6>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="mb-3">
+                                <label class="info-label">Ngày tham gia</label>
+                                <span class="info-value" th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'dd/MM/yyyy') : 'Chưa cập nhật'}">02/05/2026</span>
+                            </div>
+
+                            <div class="mb-3" th:if="${#authentication?.name == user.userName or #authentication?.name == user.email}">
+                                <label class="info-label">Email cá nhân</label>
+                                <span class="info-value" style="color: #58a6ff !important;" th:text="${user.email}">user@example.com</span>
+                            </div>
+
+                            <div>
+                                <label class="text-muted small d-block">Trạng thái</label>
+                                <span class="badge bg-success" th:text="${user.status}">ACTIVE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="col-md-8">
+                    <div class="card" style="background-color: #161b22; border: 1px solid #30363d; border-radius: 12px; color: white;">
+                        <div class="card-header border-bottom border-secondary">
+                            <h6 class="mb-0 fw-bold"><i class="bi bi-journal-text me-2"></i>Tiểu sử</h6>
+                        </div>
+                        <div class="card-body">
+
+                            <p style="white-space: pre-wrap;"
+                               th:text="${user.bio != null && !user.bio.isEmpty() ? user.bio : 'Chưa để lại tiểu sử nào'}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script th:inline="javascript">
+    function uploadImage(type) {
+     const input = document.getElementById(type + 'Input');
+     if (!input || !input.files[0]) return;
+
+     const file = input.files[0];
+     const formData = new FormData();
+     formData.append(type === 'avatar' ? 'avatarFile' : 'bannerFile', file);
+
+
+     const token = document.querySelector('meta[name="_csrf"]').content;
+     const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+     console.log("Token:", token);
+     console.log("Header:", header);
+
+     fetch('/user/profile/update-image', {
+         method: 'POST',
+         headers: {
+             [header]: token
+         },
+         body: formData
+     })
+     .then(response => {
+         if (response.ok) {
+             window.location.reload();
+         } else if (response.status === 403) {
+             alert("Lỗi 403: Sai mã bảo mật CSRF. Hãy thử load lại trang.");
+         } else {
+             alert("Lỗi: " + response.status);
+         }
+     })
+     .catch(error => console.error('Error:', error));
+ }
+</script>
+
+</body>
+</html>

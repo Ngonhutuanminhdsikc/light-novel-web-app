@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Xác thực mã OTP | LN-MINH</title>
+    <style>
+        body { background-color: #1a1a1a; color: white; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background-color: #2d2d2d; padding: 30px; border-radius: 10px; width: 350px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        h2 { color: #2196F3; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 5px; border: 1px solid #444; background: #3d3d3d; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #2196F3; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; }
+        button:hover { background-color: #1976D2; }
+        .error { color: #ff5252; margin-bottom: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Xác thực OTP</h2>
+    <p>Vui lòng nhập mã 6 số đã gửi đến Email của bạn</p>
+
+    <form th:action="@{/verify-otp}" method="post">
+        <div th:if="${error}" class="error" th:text="${error}"></div>
+
+        <input type="text" name="otp" placeholder="Nhập mã OTP (6 số)" required maxlength="6" pattern="\d{6}">
+        <button type="submit">XÁC NHẬN</button>
+    </form>
+
+    <p style="margin-top: 20px; font-size: 13px;">
+        <a th:href="@{/forgot}" style="color: #2196F3; text-decoration: none;">Gửi lại mã</a>
+    </p>
+</div>
+</body>
+</html>

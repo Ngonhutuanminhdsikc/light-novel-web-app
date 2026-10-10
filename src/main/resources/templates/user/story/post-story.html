@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thêm Truyện Mới - Light Novel System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+  <style>
+    body {
+        background-color: #0d1117 !important;
+        color: #c9d1d9 !important;
+        padding-top: 85px; /* Đẩy xuống để không bị Header che */
+    }
+
+    /* ==================== ĐỒNG BỘ THANH NAVBAR CÙNG HÀNG ==================== */
+    .navbar .container,
+    .navbar .container-fluid,
+    nav .container,
+    nav .container-fluid {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    .navbar form, nav form {
+        display: flex !important;
+        align-items: center !important;
+        margin-bottom: 0 !important;
+        flex-grow: 1 !important;
+        max-width: 320px !important;
+        margin-left: auto !important;
+        margin-right: 1.5rem !important;
+    }
+
+    .navbar form .input-group, nav form .input-group {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+    }
+
+    .navbar form input.form-control, nav form input.form-control {
+        background-color: #161b22 !important;
+        border: 1px solid #30363d !important;
+        color: #c9d1d9 !important;
+    }
+    /* ======================================================================== */
+
+    /* Giao diện Card Dark phong cách GitHub */
+    .card-dark-custom {
+        background-color: #161b22 !important;
+        border: 1px solid #30363d !important;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .card-header-custom {
+        background-color: #21262d !important;
+        border-bottom: 1px solid #30363d !important;
+        color: #58a6ff !important;
+    }
+
+    /* Định dạng màu nhãn Label sáng rõ, không bị mờ */
+    .form-label-custom {
+        color: #8b949e !important;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    /* Định dạng các ô Form Input màu tối */
+    .form-control-dark {
+        background-color: #0d1117 !important;
+        border: 1px solid #30363d !important;
+        color: #c9d1d9 !important;
+    }
+    .form-control-dark:focus {
+        background-color: #0d1117 !important;
+        border-color: #58a6ff !important;
+        color: #c9d1d9 !important;
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+    }
+    .form-control-dark[readonly] {
+        background-color: #090d13 !important;
+        color: #8b949e !important;
+        border-color: #21262d !important;
+    }
+
+    .form-select-dark {
+        background-color: #0d1117 !important;
+        border: 1px solid #30363d !important;
+        color: #c9d1d9 !important;
+    }
+    .form-select-dark:focus {
+        border-color: #58a6ff !important;
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+    }
+
+    /* Khung bọc danh sách Tags màu tối */
+    .tags-container-dark {
+        background-color: #0d1117 !important;
+        border: 1px solid #30363d !important;
+    }
+
+    /* Từng item Tag chuyển sang tối */
+    .tag-badge-dark {
+        background-color: #21262d !important;
+        color: #c9d1d9 !important;
+        border: 1px solid #30363d !important;
+    }
+
+    .btn-action-dark {
+        background-color: #21262d;
+        border: 1px solid #30363d;
+        color: #c9d1d9;
+        transition: 0.2s;
+    }
+    .btn-action-dark:hover {
+        background-color: #30363d;
+        color: #58a6ff;
+    }
+
+    /* Tùy chỉnh Checkbox */
+    .form-check-input {
+        background-color: #0d1117;
+        border-color: #30363d;
+        cursor: pointer;
+    }
+    .form-check-input:checked {
+        background-color: #238636;
+        border-color: #2ea043;
+    }
+    .form-check-label {
+        cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div th:replace="~{user/fragments/header :: user_navbar}"></div>
+
+<div class="container-fluid mt-4 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-md-11">
+      <div class="card card-dark-custom shadow-sm">
+        <div class="card-header card-header-custom p-3 d-flex justify-content-between align-items-center">
+          <h4 class="mb-0 fw-bold"><i class="bi bi-journal-plus me-2"></i>Thêm Truyện Mới</h4>
+          <a th:href="@{/user/stories/my-stories}" class="btn btn-sm btn-action-dark"><i class="bi bi-arrow-left me-1"></i> Quay lại danh sách</a>
+        </div>
+        <div class="card-body p-4">
+
+          <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+          <form th:action="@{/user/stories/create-new-story}" th:object="${story}" method="post" enctype="multipart/form-data">
+
+            <div class="row">
+              <div class="col-md-8">
+                <div class="mb-4">
+                  <label class="form-label fw-bold form-label-custom">TIÊU ĐỀ TRUYỆN:</label>
+                  <input type="text" th:field="*{title}" id="title"
+                         class="form-control form-control-dark"
+                         th:classappend="${#fields.hasErrors('title')} ? 'is-invalid' : ''"
+                         placeholder="Nhập tên bộ truyện..." oninput="generateSlug()">
+
+                  <div class="invalid-feedback d-block"
+                       th:if="${#fields.hasErrors('title')}"
+                       th:text="${#fields.errors('title')[0]}"></div>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold form-label-custom">SLUG (ĐƯỜNG DẪN TỰ ĐỘNG):</label>
+                  <input type="text" th:field="*{slug}" id="slug" class="form-control form-control-dark" readonly>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold form-label-custom">MÔ TẢ / NỘI DUNG TÓM TẮT:</label>
+                  <textarea th:field="*{description}" class="form-control form-control-dark" rows="8"
+                            placeholder="Viết tóm tắt nội dung cốt truyện, bối cảnh nhân vật tại đây..."></textarea>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label fw-bold form-label-custom">TÁC GIẢ:</label>
+
+                <!-- Select Box -->
+                <select name="authorId" class="form-select form-select-dark mb-2">
+                  <option value="">-- Hoặc chọn tác giả có sẵn --</option>
+                  <option th:each="a : ${allAuthors}"
+                          th:value="${a.id}"
+                          th:text="${a.name}"></option>
+                </select>
+
+                <!-- Input Text nếu không có tác giả -->
+                <input type="text" name="authorName" class="form-control form-control-dark"
+                       placeholder="Nhập tên tác giả nếu không có trong danh sách...">
+
+                <!-- KHỐI LỖI RIÊNG BIỆT (Không để chung vào thẻ div trên) -->
+                <div class="invalid-feedback d-block text-danger"
+                     th:if="${errorMessage}"
+                     th:text="${errorMessage}">
+                </div>
+              </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold form-label-custom">TRẠNG THÁI SÁNG TÁC:</label>
+                  <select th:field="*{status}" class="form-select form-select-dark">
+                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st.name()}"></option>
+                  </select>
+                </div>
+
+                <div class="mb-4">
+                  <label class="form-label fw-bold form-label-custom">TẢI ẢNH BÌA LÊN:</label>
+                  <input type="file" name="imageFile" class="form-control form-control-dark" accept="image/*" onchange="previewImage(this)">
+                  <div class="mt-3 text-center">
+                    <img id="preview" src="#" alt="Xem trước" class="rounded border border-secondary shadow-sm" style="display:none; max-width: 130px; height: 180px; object-fit: cover;">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-bold form-label-custom"><i class="bi bi-tags-fill me-2"></i>THỂ LOẠI (TAGS):</label>
+              <div class="d-flex flex-wrap gap-2 p-3 rounded tags-container-dark">
+                <div th:each="t : ${tags}" class="form-check tag-badge-dark p-2 rounded d-flex align-items-center">
+                  <input class="form-check-input ms-0 me-2" type="checkbox"
+                         name="tagIds" th:value="${t.id}" th:id="'tag' + ${t.id}">
+                  <label class="form-check-label text-light small" th:for="'tag' + ${t.id}" th:text="${t.name}"></label>
+                </div>
+              </div>
+
+              <div class="invalid-feedback d-block text-danger mt-2"
+                   th:if="${tagError}"
+                   th:text="${tagError}">
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center border-top border-secondary pt-3 mt-4">
+              <a th:href="@{/user/stories/my-stories}" class="btn btn-action-dark px-4"><i class="bi bi-x-lg me-1"></i> Hủy bỏ</a>
+              <button type="submit" class="btn btn-success px-5 rounded-pill fw-bold"><i class="bi bi-check-lg me-1"></i> Lưu truyện ngay</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function generateSlug() {
+      let title = document.getElementById("title").value;
+      let slug = title.toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[đĐ]/g, 'd')
+          .replace(/([^0-9a-z-\s])/g, '')
+          .replace(/(\s+)/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-+|-+$/g, '');
+      document.getElementById("slug").value = slug;
+  }
+
+  // Hàm JavaScript giúp người dùng xem trước ảnh bìa ngay lập tức khi chọn file
+  function previewImage(input) {
+      const preview = document.getElementById('preview');
+      if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+              preview.src = e.target.result;
+              preview.style.display = 'inline-block';
+          }
+          reader.readAsDataURL(input.files[0]);
+      } else {
+          preview.src = '#';
+          preview.style.display = 'none';
+      }
+  }
+</script>
+</body>
+</html>

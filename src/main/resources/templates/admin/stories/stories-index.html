@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="header_head">
+  <meta charset="UTF-8">
+  <title>Admin - Light Novel Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    .sidebar { min-height: 100vh; background: #343a40; color: white; }
+    .sidebar a { color: #d1d1d1; text-decoration: none; padding: 10px 20px; display: block; }
+    .sidebar a:hover { background: #495057; color: white; }
+    .active-link { background: #0d6efd !important; color: white !important; }
+
+    /* Cố định kích thước ảnh bìa */
+    .thumb-img {
+        width: 60px;           /* Chiều rộng cố định */
+        height: 85px;          /* Chiều cao cố định (tỉ lệ chuẩn 2:3) */
+        object-fit: cover;      /* Cắt ảnh vừa khung, không làm méo ảnh */
+        border-radius: 4px;    /* Bo góc nhẹ cho đẹp */
+        border: 1px solid #dee2e6; /* Thêm viền mỏng */
+    }
+  </style>
+</head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <div th:replace="~{admin/fragments/layout :: sidebar}"></div>
+
+    <main class="col-md-10 p-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+          <h3 class="mb-0"><i class="bi bi-journal-text me-2"></i>Danh sách Light Novel</h3>
+
+          <div class="d-flex gap-2 w-50">
+            <form th:action="@{/admin/stories}" method="get" class="input-group input-group-sm">
+
+              <input type="text" name="keyword" th:value="${keyword}"
+                     class="form-control" placeholder="Tìm tên truyện hoặc tác giả...">
+
+              <button class="btn btn-primary" type="submit">
+                <i class="bi bi-search"></i>
+              </button>
+              <a th:if="${keyword}" th:href="@{/admin/stories}" class="btn btn-outline-light">
+                <i class="bi bi-x-circle"></i>
+              </a>
+            </form>
+          </div>
+
+          <a th:href="@{/admin/stories/add}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> Thêm truyện mới
+          </a>
+
+          <a href="/admin/stories/pending" class="btn btn-warning position-relative">
+            <i class="bi bi-clock-history me-1"></i> Truyện chờ duyệt
+          </a>
+
+        </div>
+        <div class="card-body">
+
+          <div th:if="${successMessage != null}" class="alert alert-success border-0 shadow-sm mb-3" style="color: #0f5132; background-color: #d1e7dd; border-radius: 6px; padding: 10px 15px;">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${successMessage}">Tin nhắn thành công</span>
+          </div>
+
+          <div th:if="${errorMessage != null}" class="alert alert-danger border-0 shadow-sm mb-3" style="color: #842029; background-color: #f8d7da; border-radius: 6px; padding: 10px 15px;">
+            <i class="bi bi-exclamation-octagon-fill me-2"></i>
+            <span th:text="${errorMessage}">Tin nhắn thất bại</span>
+          </div>
+
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+            <tr>
+              <th>Bìa</th>
+              <th>Thông tin truyện</th>
+              <th>Tác giả</th>
+              <th>Thể loại</th>
+              <th>Trạng thái</th>
+              <th class="text-center">Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="s : ${stories}">
+              <td>
+                <img th:src="${s.thumbnailUrl != null && !s.thumbnailUrl.isEmpty() ? s.thumbnailUrl : 'https://via.placeholder.com/60x85'}"
+                     class="thumb-img shadow-sm" alt="cover">
+              </td>
+              <td>
+                <div class="fw-bold" th:text="${s.title}"></div>
+                <small class="text-muted d-block" th:text="${s.slug}"></small>
+                <span th:if="${s.isHot}" class="badge bg-danger">HOT</span>
+              </td>
+              <td th:text="${s.author != null ? s.author.name : 'Chưa rõ'}"></td>
+              <td>
+                <div class="d-flex flex-wrap gap-1">
+                  <span th:each="t : ${s.tags}" class="badge bg-info text-dark" th:text="${t.name}"></span>                </div>
+              </td>
+              <td>
+                <span th:classappend="${s.status.name() == 'ONGOING' ? 'text-primary' : (s.status.name() == 'COMPLETED' ? 'text-success' : 'text-danger')}" class="fw-bold" th:text="${s.status}"></span>
+              </td>
+              <td class="text-center">
+                <div class="btn-group">
+                  <a th:href="@{/chaptersController/story/{id}(id=${s.id})}" class="btn btn-sm btn-outline-info" title="Quản lý chương">
+                    <i class="bi bi-list-ol"></i> Chương
+                  </a>
+
+                  <a th:href="@{/admin/stories/edit/{id}(id=${s.id})}" class="btn btn-sm btn-outline-warning" title="Sửa truyện">
+                    <i class="bi bi-pencil"></i> Sửa
+                  </a>
+
+                  <a th:href="@{/admin/stories/delete/{id}(id=${s.id})}" class="btn btn-sm btn-outline-danger" title="Xóa truyện"
+                     onclick="return confirm('Bạn có chắc muốn xóa truyện này và toàn bộ chương liên quan?')">
+                    <i class="bi bi-trash"></i> Xóa
+                  </a>
+                </div>
+              </td>
+            </tr>
+            <tr th:if="${stories.isEmpty()}">
+              <td colspan="6" class="text-center py-5 text-muted">Hệ thống chưa có truyện nào.</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+<!--<head th:fragment="header_head">-->
+<!--  <meta charset="UTF-8">-->
+<!--  <title>Admin - Light Novel Management</title>-->
+<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">-->
+<!--  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">-->
+<!--  <style>-->
+<!--    .sidebar { min-height: 100vh; background: #343a40; color: white; }-->
+<!--    .sidebar a { color: #d1d1d1; text-decoration: none; padding: 10px 20px; display: block; }-->
+<!--    .sidebar a:hover { background: #495057; color: white; }-->
+<!--    .active-link { background: #0d6efd !important; color: white !important; }-->
+<!--  </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<div class="container-fluid">-->
+<!--  <div class="row">-->
+<!--    <div th:replace="~{admin/fragments/layout :: sidebar}"></div>-->
+<!--    <main class="col-md-10 px-md-4 py-4">-->
+<!--      <div class="d-flex justify-content-between align-items-center mb-4">-->
+<!--        <h2>Cấu hình Vai trò (Roles)</h2>-->
+<!--        <a th:href="@{/rolesController/add}" class="btn btn-primary btn-sm">Thêm Role mới</a>-->
+<!--      </div>-->
+
+<!--      <div class="card col-md-8 shadow-sm">-->
+<!--        <table class="table mb-0">-->
+<!--          <thead class="table-dark">-->
+<!--          <tr>-->
+<!--            <th>Tên vai trò</th>-->
+<!--            <th>Mô tả quyền hạn</th>-->
+<!--            <th class="text-end">Thao tác</th>-->
+<!--          </tr>-->
+<!--          </thead>-->
+<!--          <tbody>-->
+<!--          <tr th:each="role : ${roles}">-->
+<!--            <td class="fw-bold" th:text="${role.roleName}"></td>-->
+<!--            <td th:text="${role.description}"></td>-->
+<!--            <td class="text-end">-->
+<!--              <a th:href="@{/rolesController/edit/{id}(id=${role.id})}" class="btn btn-sm btn-link text-warning">Sửa</a>-->
+<!--            </td>-->
+<!--          </tr>-->
+<!--          </tbody>-->
+<!--        </table>-->
+<!--      </div>-->
+<!--    </main>-->
+<!--  </div>-->
+<!--</div>-->
+<!--</body>-->
+<!--</html>-->

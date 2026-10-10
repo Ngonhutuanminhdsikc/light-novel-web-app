@@ -1,0 +1,45 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  tomcat:
+    max-http-form-post-size: 20MB
+    max-parameter-count: 10000
+    connection-timeout: 20000
+    file-count-limit: 100
+  error:
+    include-stacktrace: always
+
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+  datasource:
+    url: "jdbc:mysql://localhost:3306/identity_service?createDatabaseIfNotExist=true"
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.MySQL8Dialect
+          format_sql: true
+    show-sql: true
+    open-in-view: true
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SPRING_MAIL_USERNAME:ngotuanminh205@gmail.com}
+    password: ${SPRING_MAIL_PASSWORD:YOUR_APP_PASSWORD_HERE}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true

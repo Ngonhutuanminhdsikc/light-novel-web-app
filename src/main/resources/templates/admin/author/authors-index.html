@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="header_head">
+    <meta charset="UTF-8">
+    <title>Admin - Light Novel Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .sidebar { min-height: 100vh; background: #343a40; color: white; }
+        .sidebar a { color: #d1d1d1; text-decoration: none; padding: 10px 20px; display: block; }
+        .sidebar a:hover { background: #495057; color: white; }
+        .active-link { background: #0d6efd !important; color: white !important; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{admin/fragments/layout :: sidebar}"></div>
+        <main class="col-md-10 px-md-4 py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+                <h1 class="h2">Danh sách Tác giả</h1>
+                <div class="d-flex gap-3">
+                    <form th:action="@{/authors}" method="get" class="d-flex">
+                        <div class="input-group">
+                            <input type="text" name="keyword" th:value="${keyword}"
+                                   class="form-control" placeholder="Tìm tên tác giả...">
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    <a th:href="@{/authors/add}" class="btn btn-primary">
+                        <i class="bi bi-person-plus"></i> Thêm Tác giả
+                    </a>
+                </div>
+            </div>
+
+            <div th:if="${errorMessage != null}" class="alert alert-danger border-0 shadow-sm mb-3" style="color: #842029; background-color: #f8d7da; border-radius: 6px; padding: 10px 15px;">
+                <i class="bi bi-exclamation-octagon-fill me-2"></i> <span th:text="${errorMessage}"></span>
+            </div>
+            <div th:if="${successMessage != null}" class="alert alert-success border-0 shadow-sm mb-3" style="color: #0f5132; background-color: #d1e7dd; border-radius: 6px; padding: 10px 15px;">
+                <i class="bi bi-check-circle-fill me-2"></i> <span th:text="${successMessage}"></span>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">ID</th>
+                            <th>Họ tên</th>
+                            <th>Mô tả ngắn</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="author : ${authors}">
+                            <td class="ps-4" th:text="${author.id}"></td>
+                            <td class="fw-bold" th:text="${author.name}"></td>
+                            <td class="text-muted text-truncate" style="max-width: 250px;" th:text="${author.description}"></td>
+                            <td class="text-end pe-4">
+                                <a th:href="@{/authors/edit/{id}(id=${author.id})}" class="btn btn-outline-warning btn-sm">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{/authors/delete/{id}(id=${author.id})}"
+                                   class="btn btn-outline-danger btn-sm"
+                                   onclick="return confirm('Xóa tác giả này sẽ ảnh hưởng đến các truyện liên quan. Tiếp tục?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

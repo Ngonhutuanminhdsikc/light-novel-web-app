@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="header_head">
+    <meta charset="UTF-8">
+    <title>Admin - Light Novel Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .sidebar { min-height: 100vh; background: #343a40; color: white; }
+        .sidebar a { color: #d1d1d1; text-decoration: none; padding: 10px 20px; display: block; }
+        .sidebar a:hover { background: #495057; color: white; }
+        .active-link { background: #0d6efd !important; color: white !important; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div th:replace="~{admin/fragments/layout :: sidebar}"></div>
+
+        <main class="col-md-10 px-md-4 py-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/storiesController}">Quản lý truyện</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Chỉnh sửa thông tin</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-gear-fill me-2"></i>Cấu hình truyện: <span class="fw-bold" th:text="${story.title}"></span>
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+
+                    <div th:if="${errorMessage != null}" class="alert alert-danger border-0 shadow-sm mb-3" style="color: #842029; background-color: #f8d7da; border-color: #f5c2c7; border-radius: 6px; padding: 10px 15px;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong th:text="${errorMessage}">Tin nhắn thông báo lỗi</strong>
+                    </div>
+
+                    <form th:action="@{/admin/stories/edit/{id}(id=${story.id})}" th:object="${story}" method="post" enctype="multipart/form-data" novalidate>
+                        <input type="hidden" th:field="*{id}" />
+                        <input type="hidden" th:field="*{slug}" />
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-secondary">Tên truyện</label>
+                                    <input type="text" th:field="*{title}" class="form-control form-control-lg" placeholder="Nhập tên truyện..." required />
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-secondary">Mô tả tóm tắt</label>
+                                    <textarea th:field="*{description}" class="form-control" rows="8" placeholder="Viết giới thiệu ngắn về nội dung truyện..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-secondary">Tác giả</label>
+                                    <select th:field="*{author}" class="form-select" required>
+                                        <option value="" disabled>-- Chọn tác giả --</option>
+                                        <option th:each="a : ${authors}" th:value="${a.id}" th:text="${a.name}"></option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-secondary">Thay đổi ảnh bìa</label>
+                                    <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                                    <div class="mt-2">
+                                        <small class="text-muted d-block mb-1">Ảnh hiện tại:</small>
+                                        <img th:src="${story.thumbnailUrl}" class="rounded shadow-sm" style="height: 150px; object-fit: cover;">
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-secondary">Trạng thái bộ truyện</label>
+                                    <select th:field="*{status}" class="form-select">
+                                        <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}"></option>
+                                    </select>
+                                </div>
+
+                                <div class="card bg-light border-0 p-3 mb-4">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" th:field="*{hot}" id="isHot">
+                                        <label class="form-check-label fw-bold text-danger" for="isHot">
+                                            🔥 Đánh dấu truyện HOT
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">Truyện HOT sẽ được ưu tiên hiển thị ở trang chủ.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold"><i class="bi bi-tags me-2"></i>Gán nhãn (Tags):</label>
+                            <div class="d-flex flex-wrap gap-3 p-3 border rounded bg-light">
+                                <div th:each="t : ${allTags}" class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="tagIds"
+                                           th:value="${t.id}"
+                                           th:id="'tag' + ${t.id}"
+                                           th:checked="${story.tags.contains(t)}">
+                                    <label class="form-check-label" th:for="'tag' + ${t.id}" th:text="${t.name}"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                                <i class="bi bi-save me-2"></i>Lưu thay đổi
+                            </button>
+                            <a th:href="@{/admin/stories}" class="btn btn-outline-secondary px-4">
+                                Hủy bỏ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    // Một chút hiệu ứng khi rê chuột vào label thể loại
+    document.querySelectorAll('.form-check-label').forEach(label => {
+        label.addEventListener('mouseenter', () => label.classList.add('bg-light'));
+        label.addEventListener('mouseleave', () => label.classList.remove('bg-light'));
+    });
+</script>
+</body>
+</html>

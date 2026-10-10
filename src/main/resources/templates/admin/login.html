@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập | LN-Minh</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #1a1a1a; color: #e0e0e0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .login-card { background: #2d2d2d; border: none; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); width: 100%; max-width: 400px; padding: 2rem; }
+        .form-control { background-color: #3d3d3d; border: 1px solid #4d4d4d; color: white; }
+        .form-control:focus { background-color: #454545; color: white; border-color: #0d6efd; box-shadow: none; }
+        .btn-primary { background-color: #0d6efd; border: none; padding: 10px; font-weight: bold; }
+        .brand-logo { color: #0d6efd; font-weight: bold; font-size: 24px; text-align: center; margin-bottom: 1.5rem; }
+        .forgot-password-link { font-size: 0.85rem; color: #0dcaf0; text-decoration: none; }
+        .forgot-password-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="brand-logo">LN</div>
+    <h5 class="text-center mb-4">Đăng nhập</h5>
+
+    <div th:if="${param.error}" class="alert alert-danger py-2" style="font-size: 14px;">
+        <span th:text="${param.msg != null ? param.msg : 'Sai tài khoản hoặc mật khẩu!'}"></span>
+    </div>
+
+    <div th:if="${param.logout}" class="alert alert-info py-2" style="font-size: 14px;">
+        Đã đăng xuất thành công.
+    </div>
+
+    <div th:if="${param.success}" class="alert alert-success py-2" style="font-size: 14px;">
+        Đăng ký thành công! Mời bạn đăng nhập.
+    </div>
+
+    <form th:action="@{/login}" method="post" autocomplete="off">
+
+        <div class="mb-3">
+            <label class="form-label">Tên đăng nhập</label>
+            <input type="text" name="username" id="username" class="form-control" placeholder="Nhập username...">
+            <div id="usernameError" class="text-danger mt-1" style="font-size: 13px; display: none;">Vui lòng nhập tên đăng nhập!</div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Mật khẩu</label>
+            <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" autocomplete="new-password">
+            <div id="passwordError" class="text-danger mt-1" style="font-size: 13px; display: none;">Vui lòng nhập mật khẩu!</div>
+        </div>
+
+        <div class="mb-4 text-end">
+            <a th:href="@{/forgot}" class="forgot-password-link">Quên mật khẩu?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">ĐĂNG NHẬP</button>
+    </form>
+
+    <div class="text-center mt-4">
+        <span style="color: #b0b0b0;">Chưa có tài khoản?</span>
+        <a th:href="@{/register}"
+           style="color: #0dcaf0; text-decoration: none; font-weight: bold; margin-left: 5px;">
+            Đăng ký ngay
+        </a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('username').addEventListener('input', hideServerErrors);
+    document.getElementById('password').addEventListener('input', hideServerErrors);
+
+    function hideServerErrors() {
+        let serverErrors = document.querySelectorAll('.alert-danger');
+        serverErrors.forEach(function(error) {
+            error.style.display = 'none';
+        });
+    }
+
+    document.querySelector('form').addEventListener('submit', function(event) {
+        let username = document.getElementById('username').value;
+        let password = document.getElementById('password').value;
+        let regex = /^[a-zA-Z0-9]+$/;
+        let regexPassword = /^[a-zA-Z0-9@]+$/;
+        let isValid = true;
+
+        document.getElementById('usernameError').style.display = 'none';
+        document.getElementById('passwordError').style.display = 'none';
+
+      if (username.length < 5 || !regex.test(username)) {
+        document.getElementById('usernameError').innerText = "Tên đăng nhập từ 5 ký tự, chỉ gồm chữ và số!";
+        document.getElementById('usernameError').style.display = 'block';
+        isValid = false;
+    }
+
+
+    if (password.length < 6 || !regexPassword.test(password)) {
+    document.getElementById('passwordError').innerText = "Mật khẩu từ 6 ký tự, chỉ gồm chữ, số và @!";
+    document.getElementById('passwordError').style.display = 'block';
+    isValid = false;
+}
+
+    if (!isValid) {
+            event.preventDefault();
+    }
+    });
+</script>
+
+</body>
+</html>

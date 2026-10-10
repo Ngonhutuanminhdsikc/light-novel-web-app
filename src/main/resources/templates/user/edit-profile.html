@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Chỉnh sửa hồ sơ</title>
+  <th:block th:replace="~{user/fragments/header :: header_resources}"></th:block>
+  <link rel="stylesheet" th:href="@{/style/style.css}">
+</head>
+<body style="background-color: #0d1117; color: white;">
+<div th:replace="~{user/fragments/header :: user_navbar}"></div>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card" style="background-color: #161b22; border: 1px solid #30363d; border-radius: 12px;">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Cập nhật thông tin cá nhân</h5>
+        </div>
+        <div class="card-body">
+
+          <form th:action="@{/user/profile/update}" method="post">
+
+            <div class="mb-3">
+              <label class="form-label text-light small fw-bold">Địa chỉ Email</label>
+              <input type="email" name="email" th:value="${user.email}"
+                     class="form-control" style="background-color: #0d1117; color: white; border: 1px solid #30363d;" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold" style="color: #adbac7;">Họ và Tên</label>
+              <input type="text" name="fullName" th:value="${user.fullName}"
+                     class="form-control"
+                     style="background-color: #0d1117 !important; color: #ffffff !important; border: 1px solid #30363d !important;">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold" style="color: #58a6ff;">Giới thiệu bản thân</label>
+              <textarea name="bio" class="form-control" rows="3"
+                        style="background-color: #0d1117 !important; color: #ffffff !important; border: 1px solid #30363d !important;"
+                        th:text="${user.bio}"></textarea>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+              <a th:href="@{/user/profile}" class="btn btn-outline-secondary text-white">Hủy bỏ</a>
+              <button type="submit" class="btn btn-success px-4">Lưu thay đổi</button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

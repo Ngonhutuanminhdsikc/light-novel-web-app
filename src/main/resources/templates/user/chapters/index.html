@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý chương - LN-Minh</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+  <style>
+    body {
+        background-color: #0d1117 !important;
+        color: #c9d1d9 !important;
+        padding-top: 85px;
+    }
+
+    /* ==================== ĐỒNG BỘ THANH NAVBAR CÙNG HÀNG ==================== */
+    .navbar .container,
+    .navbar .container-fluid,
+    nav .container,
+    nav .container-fluid {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    .navbar form, nav form {
+        display: flex !important;
+        align-items: center !important;
+        margin-bottom: 0 !important;
+        flex-grow: 1 !important;
+        max-width: 320px !important;
+        margin-left: auto !important;
+        margin-right: 1.5rem !important;
+    }
+
+    .navbar form .input-group, nav form .input-group {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        width: 100% !important;
+    }
+
+    .navbar form input.form-control, nav form input.form-control {
+        background-color: #161b22 !important;
+        border: 1px solid #30363d !important;
+        color: #c9d1d9 !important;
+    }
+    /* ======================================================================== */
+
+    /* Thừa hưởng style từ trang My Stories */
+    .card-dark-custom {
+        background-color: #161b22 !important;
+        border: 1px solid #30363d !important;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table-dark-custom { background-color: transparent !important; margin-bottom: 0; }
+    .table-dark-custom thead th {
+        background-color: #0d1117 !important;
+        color: #8b949e !important;
+        border-bottom: 1px solid #30363d !important;
+        padding: 1rem;
+    }
+
+    /* Dòng ngăn cách Volume */
+    .vol-header {
+        background-color: rgba(110, 64, 201, 0.1) !important;
+        color: #bc8cff !important;
+        font-weight: 600;
+        border-bottom: 1px solid #30363d !important;
+    }
+
+    .table-dark-custom tbody td {
+        background-color: transparent !important;
+        color: #c9d1d9 !important;
+        border-bottom: 1px solid #21262d !important;
+        padding: 0.8rem 1rem;
+    }
+
+    .btn-action-dark {
+        background-color: #21262d;
+        border: 1px solid #30363d;
+        color: #c9d1d9;
+        transition: 0.2s;
+    }
+    .btn-action-dark:hover { background-color: #30363d; color: #58a6ff; }
+    .btn-delete:hover { color: #f85149 !important; border-color: #f85149 !important; }
+    .breadcrumb-item + .breadcrumb-item::before {
+    color: #8b949e !important; /* Đổi dấu gạch chéo phân cách sang màu xám sáng */
+}
+  </style>
+</head>
+<body>
+
+<div th:replace="~{user/fragments/header :: user_navbar}"></div>
+
+<div class="container mt-4">
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a th:href="@{/user/stories/my-stories}" class="text-decoration-none" style="color: #58a6ff !important;">Truyện của tôi</a></li>
+      <li class="breadcrumb-item active text-white-50" th:text="${story.title}">Tên truyện</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+      <h3 class="fw-bold text-white mb-1">Danh sách chương</h3>
+      <p class="small mb-0" style="color: #8b949e !important;">Bộ truyện: <span class="text-info fw-semibold" th:text="${story.title}"></span></p>
+    </div>
+
+    <a th:href="@{/user/chapters/add/{id}(id=${story.id})}" class="btn btn-primary btn-sm px-3 rounded-pill">
+      <i class="bi bi-plus-lg me-1"></i> Thêm chương mới
+    </a>
+  </div>
+
+  <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mx-3 mt-3" role="alert">
+    <span th:text="${successMessage}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+
+  <div class="card card-dark-custom">
+    <div class="table-responsive">
+      <table class="table table-dark-custom align-middle">
+        <thead>
+        <tr>
+          <th style="width: 120px;">Thứ tự</th>
+          <th>Tiêu đề chương</th>
+          <th>Cập nhật</th>
+          <th class="text-end">Hành động</th>
+        </tr>
+        </thead>
+        <tbody>
+        <th:block th:each="chapter, stat : ${chapters}">
+          <tr th:if="${stat.first or chapter.volNumber != chapters[stat.index - 1].volNumber}" class="vol-header">
+            <td colspan="4" class="ps-4">
+              <i class="bi bi-bookmarks me-2"></i>
+              <span th:text="'Volume ' + ${chapter.volNumber != null ? chapter.volNumber : 'Chưa phân tập'}"></span>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="ps-4 fw-bold text-info" th:text="'Chương ' + ${chapter.chapterNumber}"></td>
+            <td th:text="${chapter.title}"></td>
+            <td class="small text-muted" th:text="${#temporals.format(chapter.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+            <td class="text-end">
+              <div class="btn-group">
+                <a th:href="@{/user/chapters/write/{id}(id=${chapter.id})}" class="btn btn-sm btn-action-dark" title="Viết nội dung">
+                  <i class="bi bi-file-text"></i>
+                </a>
+
+                <a th:href="@{/user/chapters/delete/{id}(id=${chapter.id})}"
+                   class="btn btn-sm btn-action-dark btn-delete"
+                   onclick="return confirm('Xóa chương này?')">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        </th:block>
+
+        <tr th:if="${#lists.isEmpty(chapters)}">
+          <td colspan="4" class="text-center py-5 text-muted">Chưa có chương nào. Hãy đăng chương đầu tiên nhé!</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

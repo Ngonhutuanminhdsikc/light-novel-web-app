@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments/layout :: header_head}"></head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <div th:replace="~{admin/fragments/layout :: sidebar}"></div>
+    <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+      <h1 class="h2 mb-4 border-bottom pb-2">Hệ thống Quản trị</h1>
+
+      <div class="row g-4 mb-4">
+        <div class="col-md-3">
+          <div class="card bg-primary text-white h-100 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="text-uppercase small">Tổng số Truyện</h6>
+                  <h2 class="mb-0" th:text="${totalStories}">0</h2>
+                </div>
+                <i class="bi bi-book fs-1 opacity-50"></i>
+              </div>
+            </div>
+            <a th:href="@{/storiesController}" class="card-footer text-white d-flex align-items-center justify-content-between small">
+              Xem chi tiết <i class="bi bi-chevron-right"></i>
+            </a>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-success text-white h-100 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="text-uppercase small">Thành viên</h6>
+                  <h2 class="mb-0" th:text="${totalUsers}">0</h2>
+                </div>
+                <i class="bi bi-people fs-1 opacity-50"></i>
+              </div>
+            </div>
+            <a th:href="@{/usersController}" class="card-footer text-white d-flex align-items-center justify-content-between small">
+              Xem chi tiết <i class="bi bi-chevron-right"></i>
+            </a>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-warning text-dark h-100 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="text-uppercase small">Bình luận mới</h6>
+                  <h2 class="mb-0" th:text="${totalComments}">0</h2>
+                </div>
+                <i class="bi bi-chat-dots fs-1 opacity-50"></i>
+              </div>
+            </div>
+            <div class="card-footer text-dark d-flex align-items-center justify-content-between small">
+              Cập nhật tức thì <i class="bi bi-clock"></i>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-info text-white h-100 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="text-uppercase small">Lượt theo dõi</h6>
+                  <h2 class="mb-0" th:text="${totalFollows}">0</h2>
+                </div>
+                <i class="bi bi-heart fs-1 opacity-50"></i>
+              </div>
+            </div>
+            <div class="card-footer text-white d-flex align-items-center justify-content-between small">
+              Tương tác cao <i class="bi bi-graph-up"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-8">
+          <div class="card shadow-sm h-100">
+            <div class="card-header bg-white fw-bold">Truyện vừa cập nhật chương mới</div>
+            <div class="card-body p-0">
+              <table class="table table-hover mb-0">
+                <thead class="table-light">
+                <tr>
+                  <th class="ps-3">Tên truyện</th>
+                  <th>Chương cuối</th>
+                  <th>Thời gian</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${topRecentStories}">
+                  <td class="ps-3 fw-bold" th:text="${s.title}"></td>
+                  <td><span class="badge bg-light text-dark border">Chương mới</span></td>
+                  <td class="small text-muted">Vừa xong</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card shadow-sm">
+            <div class="card-header bg-white fw-bold">Thao tác nhanh</div>
+            <div class="card-body">
+              <div class="d-grid gap-2">
+                <a th:href="@{/admin/stories/add}" class="btn btn-outline-primary text-start">
+                  <i class="bi bi-plus-square me-2"></i> Đăng truyện mới
+                </a>
+
+                <a th:href="@{/authorsController/add}" class="btn btn-outline-success text-start">
+                  <i class="bi bi-person-plus me-2"></i> Thêm tác giả
+                </a>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>

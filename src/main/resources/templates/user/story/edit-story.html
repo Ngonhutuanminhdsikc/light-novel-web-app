@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chỉnh sửa truyện - Light Novel System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            background-color: #0d1117 !important;
+            color: #c9d1d9 !important;
+            padding-top: 85px; /* Đẩy xuống để không bị Header che */
+        }
+
+        /* ==================== ĐỒNG BỘ THANH NAVBAR CÙNG HÀNG ==================== */
+        .navbar .container,
+        .navbar .container-fluid,
+        nav .container,
+        nav .container-fluid {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+        }
+
+        .navbar form, nav form {
+            display: flex !important;
+            align-items: center !important;
+            margin-bottom: 0 !important;
+            flex-grow: 1 !important;
+            max-width: 320px !important;
+            margin-left: auto !important;
+            margin-right: 1.5rem !important;
+        }
+
+        .navbar form .input-group, nav form .input-group {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            width: 100% !important;
+        }
+
+        .navbar form input.form-control, nav form input.form-control {
+            background-color: #161b22 !important;
+            border: 1px solid #30363d !important;
+            color: #c9d1d9 !important;
+        }
+        /* ======================================================================== */
+
+        /* Giao diện Card Dark phong cách GitHub */
+        .card-dark-custom {
+            background-color: #161b22 !important;
+            border: 1px solid #30363d !important;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card-header-custom {
+            background-color: #21262d !important;
+            border-bottom: 1px solid #30363d !important;
+            color: #58a6ff !important;
+        }
+
+        /* Định dạng lại màu cho các nhãn Label (Sửa lỗi bị mờ) */
+        .form-label-custom {
+            color: #8b949e !important; /* Màu xám bạc sáng của GitHub, cực kỳ dễ nhìn */
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Định dạng các ô Form Input màu tối */
+        .form-control-dark {
+            background-color: #0d1117 !important;
+            border: 1px solid #30363d !important;
+            color: #c9d1d9 !important;
+        }
+        .form-control-dark:focus {
+            background-color: #0d1117 !important;
+            border-color: #58a6ff !important;
+            color: #c9d1d9 !important;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+
+        .form-select-dark {
+            background-color: #0d1117 !important;
+            border: 1px solid #30363d !important;
+            color: #c9d1d9 !important;
+        }
+        .form-select-dark:focus {
+            border-color: #58a6ff !important;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+
+        .btn-action-dark {
+            background-color: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            transition: 0.2s;
+        }
+        .btn-action-dark:hover {
+            background-color: #30363d;
+            color: #58a6ff;
+        }
+
+        /* Đẩy sáng màu text-muted để không bị chìm vào nền tối */
+        .text-muted-light {
+            color: #7d8590 !important;
+        }
+
+        /* Tùy chỉnh Checkbox cho tiệp màu nền */
+        .form-check-input {
+            background-color: #0d1117;
+            border-color: #30363d;
+            cursor: pointer;
+        }
+        .form-check-input:checked {
+            background-color: #238636;
+            border-color: #2ea043;
+        }
+        .form-check-label {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{user/fragments/header :: user_navbar}"></div>
+
+<div class="container mt-5 mb-5">
+    <div class="card card-dark-custom shadow-sm">
+        <div class="card-header card-header-custom p-3">
+            <h4 class="mb-0 fw-bold">
+                <i class="bi bi-pencil-square me-2"></i>Chỉnh sửa truyện: <span class="text-white" th:text="${story.title}"></span>
+            </h4>
+        </div>
+        <div class="card-body p-4">
+
+            <form th:action="@{/user/stories/edit/{id}(id=${story.id})}"
+                  method="post"
+                  enctype="multipart/form-data"
+                  th:object="${story}">
+                <input type="hidden" th:field="*{slug}" />
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold form-label-custom">TÊN TRUYỆN:</label>
+                    <input type="text" class="form-control form-control-dark" th:field="*{title}">
+                    <span class="text-danger small" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold form-label-custom">TÁC GIẢ:</label>
+                    <select name="authorId" class="form-select form-select-dark mb-2">
+                        <option value="">-- Hoặc chọn tác giả có sẵn --</option>
+                        <option th:each="a : ${allAuthors}"
+                                th:value="${a.id}"
+                                th:text="${a.name}"
+                                th:selected="${story.author != null && story.author.id == a.id}"></option>
+                    </select>
+                    <input type="text" name="authorName" class="form-control form-control-dark"
+                           th:value="${story.author != null ? story.author.name : ''}"
+                           placeholder="Nhập tên tác giả mới nếu không chọn ở trên...">
+
+                    <div class="invalid-feedback d-block text-danger" th:if="${authorError}" th:text="${authorError}"></div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold form-label-custom">ẢNH BÌA TRUYỆN:</label><br>
+                    <div th:if="${story.thumbnailUrl != null}" class="mb-2">
+                        <p class="small text-muted-light mb-1">Ảnh bìa hiện tại:</p>
+                        <img th:src="${story.thumbnailUrl}" width="110" height="150" class="rounded border border-secondary shadow-sm" style="object-fit: cover;">
+                    </div>
+                    <input type="file" name="imageFile" class="form-control form-control-dark">
+
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold form-label-custom"><i class="bi bi-tags-fill me-2"></i>THỂ LOẠI (TAGS):</label>
+                    <div class="d-flex flex-wrap gap-2 p-3 rounded tags-container-dark">
+                        <div th:each="t : ${tags}" class="form-check tag-badge-dark p-2 rounded d-flex align-items-center">
+                            <input class="form-check-input ms-0 me-2" type="checkbox"
+                                   name="tagIds"
+                                   th:value="${t.id}"
+                                   th:id="'tag' + ${t.id}"
+                                   th:checked="${story.tags != null && #lists.contains(story.tags.![id], t.id)}">
+                            <label class="form-check-label text-light small" th:for="'tag' + ${t.id}" th:text="${t.name}"></label>
+                        </div>
+                    </div>
+                    <div class="invalid-feedback d-block text-danger" th:if="${tagError}" th:text="${tagError}"></div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold form-label-custom">MÔ TẢ / NỘI DUNG TÓM TẮT:</label>
+                    <textarea class="form-control form-control-dark" th:field="*{description}" rows="6" placeholder="Nhập tóm tắt nội dung bộ light novel..."></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold form-label-custom">TRẠNG THÁI SÁNG TÁC:</label>
+                    <select class="form-select form-select-dark" th:field="*{status}">
+                        <option th:each="st : ${statuses}" th:value="${st}" th:text="${st.name()}"></option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center border-top border-secondary pt-3 mt-4">
+                    <a th:href="@{/user/stories/my-stories}" class="btn btn-action-dark px-4">
+                        <i class="bi bi-x-lg me-1"></i> Hủy bỏ
+                    </a>
+                    <button type="submit" class="btn btn-success px-4 rounded-pill">
+                        <i class="bi bi-check-lg me-1"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

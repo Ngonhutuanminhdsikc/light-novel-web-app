@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LN-Minh | Thế Giới Truyện Dịch</title>
+
+    <th:block th:replace="~{user/fragments/header :: header_resources}"></th:block>
+
+    <!-- Các thư viện Slider -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+
+    <link rel="stylesheet" th:href="@{/style/style.css}">
+
+    <style>
+
+        .hako-more-box {
+            background: rgba(255,255,255,0.03);
+            border: 2px dashed #2d333b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #8b949e;
+        }
+        .hako-more-box:hover { background: rgba(110, 64, 201, 0.1); border-color: #6e40c9; color: #fff; }
+
+        .section-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .section-title i { margin-right: 10px; }
+        .slick-prev:before, .slick-next:before { color: #6e40c9; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{user/fragments/header :: user_navbar}"></div>
+
+<div class="container mt-5">
+
+    <section class="mb-5">
+        <h4 class="section-title text-danger"><i class="bi bi-fire"></i> TRUYỆN HOT</h4>
+        <div class="hot-slider">
+            <div class="px-2" th:each="story : ${hotStories}">
+                <a th:href="@{/story/{id}(id=${story.id})}" class="hako-card d-block">
+                    <div class="hako-cover-wrapper">
+                        <img th:src="${story.thumbnailUrl ?: 'https://i.docln.net/res/public/assets/images/no_cover.jpg'}" class="hako-cover">
+                        <div class="hako-overlay">
+                            <div class="hako-title-overlay" th:text="${story.title}"></div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-5">
+        <h4 class="section-title text-info"><i class="bi bi-arrow-repeat"></i> MỚI CẬP NHẬT</h4>
+        <div class="hako-grid">
+            <div class="hako-card" th:each="story : ${recentStories}">
+                <a th:href="@{/story/{id}(id=${story.id})}">
+                    <div class="hako-cover-wrapper">
+
+                        <span th:if="${story.approvalStatus != null and story.approvalStatus.name() == 'PENDING'}"
+                              class="badge bg-warning text-dark position-absolute top-0 start-0 m-2 shadow"
+                              style="z-index: 10;">
+                        <i class="bi bi-clock-history"></i> Chờ duyệt
+                        </span>
+
+                        <img th:src="${story.thumbnailUrl ?: 'https://i.docln.net/res/public/assets/images/no_cover.jpg'}" class="hako-cover">
+                        <div class="hako-overlay">
+                            <div class="hako-title-overlay" th:text="${story.title}"></div>
+                            <div class="hako-meta">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <span th:text="${(story.chapters != null ? story.chapters.size() : 0) + ' Chapters'}"></span>
+                            </div>
+                            <div class="hako-hashtag">
+                                <th:block th:each="tag, iter : ${story.tags}" th:if="${iter.index < 1}">
+                                    <span th:text="'#' + ${tag.name} + ' '"></span>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="hako-card">
+                <a href="/new"  >
+                    <div class="hako-cover-wrapper hako-more-box">
+                        <i class="bi bi-arrow-right-circle fs-1"></i>
+                        <span class="mt-2 fw-bold">Xem thêm</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-5 pt-4 border-top border-secondary border-opacity-10">
+        <h4 class="section-title text-success"><i class="bi bi-check-all"></i> TRUYỆN HOÀN THÀNH</h4>
+        <div class="hako-grid">
+            <div class="hako-card" th:each="s : ${completedStories}">
+                <a th:href="@{/story/{id}(id=${s.id})}">
+                    <div class="hako-cover-wrapper">
+                        <img th:src="${s.thumbnailUrl ?: 'https://i.docln.net/res/public/assets/images/no_cover.jpg'}" class="hako-cover">
+                        <div class="hako-overlay">
+                            <div class="hako-title-overlay" th:text="${s.title}"></div>
+                            <div class="hako-meta text-success fw-bold">
+                                <i class="bi bi-check-circle-fill"></i> Full Hoàn thành
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="hako-card">
+                <a href="/complete">
+                    <div class="hako-cover-wrapper hako-more-box">
+                        <i class="bi bi-arrow-right-circle fs-1"></i>
+                        <span class="mt-2 fw-bold">Xem thêm</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<footer class="mt-5 py-4 border-top border-secondary border-opacity-10 text-center">
+    <p class="small text-muted mb-0">© 2026 LILITH</p>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+
+
+<th:block th:replace="~{user/fragments/header :: header_scripts}"></th:block>
+<script>
+    $(document).ready(function(){
+        $('.hot-slider').slick({
+            infinite: true,
+            slidesToShow: 5,
+            slidesToScroll: 1,
+            arrows: true,
+            autoplay: true,
+            autoplaySpeed: 3000,
+            responsive: [
+                { breakpoint: 1200, settings: { slidesToShow: 4 } },
+                { breakpoint: 768, settings: { slidesToShow: 2, arrows: false } }
+            ]
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="header_head">
+  <meta charset="UTF-8">
+  <title>Admin - Light Novel Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    .sidebar { min-height: 100vh; background: #343a40; color: white; }
+    .sidebar a { color: #d1d1d1; text-decoration: none; padding: 10px 20px; display: block; }
+    .sidebar a:hover { background: #495057; color: white; }
+    .active-link { background: #0d6efd !important; color: white !important; }
+  </style>
+</head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <div th:replace="~{admin/fragments/layout :: sidebar}"></div>
+    <main class="col-md-10 px-md-4 py-4">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a th:href="@{/admin/stories}">Truyện</a></li>
+          <li class="breadcrumb-item active" th:text="${story.title}">Tên truyện</li>
+        </ol>
+      </nav>
+
+      <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+        <div>
+          <h2 class="mb-0">Quản lý Chương</h2>
+          <small class="text-muted">Bộ truyện: <strong th:text="${story.title}"></strong></small>
+        </div>
+        <a th:href="@{/chaptersController/add/{id}(id=${story.id})}" class="btn btn-primary">
+          <i class="bi bi-file-earmark-plus"></i> Thêm Chương mới
+        </a>
+      </div>
+
+      <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-body p-0">
+
+
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+            <tr>
+              <th class="ps-4" style="width: 150px;">Thứ tự</th>
+              <th>Tiêu đề chương</th>
+              <th>Ngày cập nhật</th>
+              <th class="text-end pe-4">Nội dung & Thao tác</th>
+            </tr>
+            </thead>
+            <tbody>
+            <th:block th:each="chapter, stat : ${chapters}">
+
+              <tr th:if="${stat.first or chapter.volNumber != chapters[stat.index - 1].volNumber}"
+                  class="table-secondary">
+                <td colspan="4" class="ps-4">
+                  <i class="bi bi-book-half"></i>
+                  <strong th:text="'Volume ' + ${chapter.volNumber != null ? chapter.volNumber : 'Chưa phân tập'}"></strong>
+                </td>
+              </tr>
+
+              <tr>
+                <td class="ps-4 fw-bold" th:text="'Chương ' + ${chapter.chapterNumber}"></td>
+                <td th:text="${chapter.title}"></td>
+                <td th:text="${#temporals.format(chapter.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                <td class="text-end pe-4">
+                  <div class="btn-group">
+                    <a th:href="@{/edit/{id}(id=${chapter.id})}" class="btn btn-sm btn-info text-white">
+                      <i class="bi bi-file-text"></i> Viết truyện
+                    </a>
+                    <a th:href="@{/chaptersController/edit/{id}(id=${chapter.id})}" class="btn btn-sm btn-outline-warning">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                    <a th:href="@{/chaptersController/delete/{id}(id=${chapter.id})}" class="btn btn-sm btn-outline-danger"
+                       onclick="return confirm('Xóa chương này?')">
+                      <i class="bi bi-trash"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            </th:block>
+
+            <tr th:if="${#lists.isEmpty(chapters)}">
+              <td colspan="4" class="text-center py-5 text-muted">Truyện này hiện chưa có chương nào.</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>

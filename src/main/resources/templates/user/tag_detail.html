@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Thể loại: ' + ${tag.name}">Thể loại - LN-MINH</title>
+    <th:block th:replace="~{user/fragments/header :: header_resources}"></th:block>
+    <link rel="stylesheet" th:href="@{/style/style.css}">
+
+    <style>
+        :root {
+            --bg-body: #0d1117;
+            --bg-card: #161b22;
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --accent-purple: #8957e5;
+        }
+        body { background-color: var(--bg-body); color: var(--text-main); }
+        .tag-header { padding: 40px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 30px; }
+        .story-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 25px; }
+        .story-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; transition: 0.3s; }
+        .story-card:hover { transform: translateY(-5px); border-color: var(--accent-purple); }
+        .story-cover { width: 100%; height: 250px; object-fit: cover; }
+        .story-info { padding: 12px; }
+        .story-title { font-weight: bold; font-size: 1rem; color: #d2a8ff; text-decoration: none; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.8em; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{user/fragments/header :: user_navbar}"></div>
+
+<div class="container my-5">
+    <div class="tag-header text-center">
+        <h1 class="fw-bold">
+            <span style="color: #e6edf3;">Thể loại:</span>
+            <span th:text="${tag.name}" style="color: var(--accent-purple)">Action</span>
+        </h1>
+
+        <div class="d-inline-block px-3 py-1 rounded-pill" style="background-color: #21262d; border: 1px solid #30363d;">
+            <i class="bi bi-collection-play me-1" style="color: #d2a8ff;"></i>
+            <span style="color: #8b949e; font-size: 0.95rem;"
+                  th:text="${stories.size()} + ' truyện thuộc thể loại này'">0 truyện</span>
+        </div>
+    </div>
+
+    <div class="story-grid">
+        <!-- Lặp qua danh sách truyện của Tag này -->
+        <div th:each="story : ${stories}" class="story-card">
+            <a th:href="@{/story/{id}(id=${story.id})}">
+                <img th:src="${story.thumbnailUrl ?: '/images/default-cover.jpg'}" class="story-cover" alt="Cover">
+            </a>
+            <div class="story-info">
+                <a th:href="@{/story/{id}(id=${story.id})}" class="story-title" th:text="${story.title}">Tên truyện</a>
+                <div class="d-flex justify-content-between mt-2 small text-muted">
+                    <span><i class="bi bi-eye"></i> [[${story.storyStats?.viewCount ?: 0}]]</span>
+                    <span class="text-uppercase" th:text="${story.status}">ONGOING</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hiển thị khi không có truyện -->
+    <div th:if="${#lists.isEmpty(stories)}" class="text-center py-5">
+        <p class="text-muted">Hiện chưa có truyện nào thuộc thể loại này.</p>
+    </div>
+</div>
+
+<th:block th:replace="~{user/fragments/header :: header_scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${story.title} + ' | LN-Minh'"></title>
+
+  <th:block th:replace="~{user/fragments/header :: header_resources}"></th:block>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" th:href="@{/style/style.css}">
+
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+  <style>
+     :root {
+         --accent-purple: #8833ff;
+         --accent-purple-light: #a366ff;
+         --border-color: #30363d;
+         --bg-card: #0d1117;
+         /* Nâng độ sáng text-muted để không bị mờ trên nền đen */
+         --text-muted: #919eab;
+         --item-bg: #161b22;
+         --item-hover: #1c2128;
+         --text-bright: #f0f6fc;
+         --text-main: #adbac7;
+     }
+
+     body { background-color: #0d1117; color: var(--text-main); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+     /* Fix lỗi mờ cho Breadcrumb và Text Muted */
+     .breadcrumb-item a { color: var(--text-muted) !important; text-decoration: none; transition: 0.2s; }
+     .breadcrumb-item a:hover { color: var(--accent-purple-light) !important; }
+     .breadcrumb-item.active { color: var(--text-bright) !important; }
+     .text-muted { color: var(--text-muted) !important; }
+
+     .story-header {
+         background: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+         border-radius: 12px;
+         border: 1px solid var(--border-color);
+     }
+
+     /* Thống kê sắc nét */
+     .stats-item { border-right: 1px solid var(--border-color); }
+     .stats-item:last-child { border-right: none; }
+     .stats-item small {
+         color: #8b949e !important;
+         font-weight: 600;
+         letter-spacing: 1px;
+         font-size: 0.75rem;
+     }
+     .stats-item strong { color: var(--text-bright); font-size: 1.25rem; }
+
+     .btn-read { background-color: var(--accent-purple); color: white; font-weight: bold; border: none; transition: 0.3s; box-shadow: 0 4px 15px rgba(136, 51, 255, 0.3); }
+     .btn-read:hover { background-color: var(--accent-purple-light); color: white; transform: translateY(-2px); }
+
+     /* Phần Tóm Tắt (Mới) */
+     .story-summary-box {
+         background: rgba(255, 255, 255, 0.03);
+         border-radius: 8px;
+         padding: 20px;
+         border-left: 4px solid var(--accent-purple);
+         line-height: 1.8;
+         color: #c9d1d9;
+     }
+
+     /* Danh sách chương */
+     .chapter-list-item {
+         display: flex;
+         align-items: center;
+         background-color: var(--item-bg);
+         border-radius: 8px;
+         padding: 14px 20px;
+         margin-bottom: 10px;
+         text-decoration: none !important;
+         border: 1px solid var(--border-color);
+         transition: all 0.25s ease;
+     }
+     .chapter-list-item:hover {
+         background-color: var(--item-hover);
+         border-color: var(--accent-purple);
+         transform: translateX(8px);
+     }
+     .chapter-index-badge {
+         background-color: #30363d;
+         color: var(--text-bright);
+         font-size: 0.75rem;
+         padding: 4px 12px;
+         border-radius: 6px;
+         font-weight: 600;
+         margin-right: 15px;
+         border: 1px solid rgba(255,255,255,0.1);
+     }
+     .chapter-title-text { color: var(--text-main); flex-grow: 1; font-weight: 500; font-size: 0.95rem; }
+     .chapter-time-tag { font-size: 0.8rem; color: var(--text-muted); }
+
+     .up-badge {
+         background: linear-gradient(45deg, #f85149, #ff7b72);
+         color: white;
+         font-size: 0.65rem;
+         padding: 2px 8px;
+         border-radius: 4px;
+         font-weight: 800;
+         margin-left: 10px;
+         text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+     }
+
+     /* Thể loại */
+     .genre-badge {
+         background-color: #21262d;
+         color: var(--accent-purple-light);
+         border: 1px solid var(--border-color);
+         border-radius: 6px;
+         padding: 6px 14px !important;
+         font-size: 0.85rem;
+         text-decoration: none;
+         transition: 0.2s;
+     }
+     .genre-badge:hover { background: var(--accent-purple); color: white; border-color: var(--accent-purple); }
+
+     /* Avatar comment */
+     .comment-avatar { border: 2px solid var(--accent-purple); padding: 2px; background: #0d1117; }
+      /* Làm sáng dấu gạch chéo phân cách (/) trong breadcrumb */
+    .breadcrumb-item + .breadcrumb-item::before {
+    color: #8b949e !important; /* Màu xám sáng để nhìn rõ phân cách */
+    }
+  </style>
+</head>
+<body>
+
+<div th:replace="~{user/fragments/header :: user_navbar}"></div>
+
+<div class="container mt-5">
+  <!-- Thông tin truyện -->
+  <div class="story-header p-4 mb-4 shadow-sm">
+    <div class="row">
+      <div class="col-md-3 text-center">
+        <img th:src="${story.thumbnailUrl != null ? story.thumbnailUrl : '/images/no-cover.jpg'}"
+             class="img-fluid rounded-3 shadow-lg" style="max-height: 380px; width: 100%; object-fit: cover;" alt="Cover">
+
+        <div class="d-grid gap-2 mt-3">
+          <a th:if="${!#maps.isEmpty(chaptersByVol)}"
+             th:href="@{/reading/chapter/{id}(id=${chaptersByVol.values()[0][0].id})}"
+             class="btn btn-read py-2 text-uppercase">Bắt đầu đọc</a>
+        </div>
+      </div>
+
+      <div class="col-md-9">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Trang chủ</a></li>
+            <li class="breadcrumb-item active text-white" th:text="${story.title}"></li>
+          </ol>
+        </nav>
+
+        <h1 class="fw-bold mb-3 text-white" th:text="${story.title}"></h1>
+
+        <div class="mb-3 d-flex align-items-center flex-wrap gap-3">
+          <div><span class="text-muted">Tác giả:</span> <span class="text-info fw-bold" th:text="${story.author != null ? story.author.name : 'Đang cập nhật'}"></span></div>
+          <span class="badge bg-secondary px-3 py-2" th:text="${story.status}"></span>
+        </div>
+
+        <div class="row text-center py-3 my-4 bg-dark bg-opacity-50 rounded-3 border border-secondary border-opacity-25 mx-0">
+          <div class="col stats-item text-white">
+            <small class="d-block text-muted mb-1">LƯỢT XEM</small>
+            <strong class="fs-5" th:text="${stats.viewCount}">0</strong>
+          </div>
+          <div class="col stats-item text-white">
+            <small class="d-block text-muted mb-1">SỐ TỪ</small>
+            <strong class="fs-5" th:text="${#aggregates.sum(story.chapters.![wordCount ?: 0]) ?: 0}">0</strong>
+          </div>
+          <div class="col stats-item text-white">
+            <small class="d-block text-muted mb-1">THEO DÕI</small>
+            <strong class="fs-5" id="follow-count" th:text="${followCount}">0</strong>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <div class="d-flex flex-wrap gap-2">
+            <a th:each="tag : ${story.tags}" th:href="@{/tagsController/genre/{slug}(slug=${tag.slug})}"
+               class="genre-badge" th:text="${tag.name}">Tác giả</a>
+          </div>
+        </div>
+
+        <div class="mt-4 mb-5">
+          <button id="btn-follow"
+                  th:classappend="${isFollowing} ? 'btn-primary' : 'btn-outline-light'"
+                  class="btn px-4 py-2 rounded-pill shadow-sm"
+                  th:data-id="${story.id}">
+            <i class="bi" th:classappend="${isFollowing} ? 'bi-heart-fill' : 'bi-heart'"></i>
+            <span id="follow-text" th:text="${isFollowing} ? ' ĐÃ THEO DÕI' : ' THEO DÕI'"></span>
+          </button>
+        </div>
+
+        <div class="mb-4" th:if="${story.description != null}">
+          <h5 class="text-white fw-bold mb-3" style="font-size: 1.1rem; letter-spacing: 0.5px;">
+            <i class="bi bi-info-circle me-2 text-primary"></i>TÓM TẮT NỘI DUNG
+          </h5>
+          <div class="story-summary-box">
+            <p class="mb-0" th:text="${story.description}" style="white-space: pre-line; text-align: justify;"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-5 mb-5 text-white">
+    <h4 class="fw-bold mb-4 text-uppercase border-bottom border-secondary pb-2" style="letter-spacing: 1px;">
+      <i class="bi bi-list-ul me-2"></i>Danh sách chương
+    </h4>
+
+    <div th:each="entry : ${chaptersByVol}" class="mb-5">
+      <h5 class="text-info mb-3">
+        <i class="bi bi-journal-bookmark-fill me-2"></i>Tập <span th:text="${entry.key}"></span>
+      </h5>
+
+      <div class="d-flex flex-column">
+        <a th:each="chapter, iterStat : ${entry.value}"
+           th:href="@{/reading/chapter/{id}(id=${chapter.id})}"
+           class="chapter-list-item">
+
+          <span class="chapter-index-badge"
+                th:text="${chapter.chapterNumber != null} ? 'Ch.' + ${chapter.chapterNumber} : 'Ch.?'"></span>
+
+          <div class="chapter-title-text">
+            <span th:text="${chapter.title ?: 'Chương không tiêu đề'}"></span>
+
+            <span class="up-badge">Up</span>
+          </div>
+
+          <!-- Thời gian cập nhật -->
+          <span class="chapter-time-tag">
+            <i class="bi bi-clock-history me-1"></i>
+            <span th:text="${chapter.createdAt != null ? #temporals.format(chapter.createdAt, 'dd/MM/yyyy') : '--/--/----'}"></span>
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <div th:if="${#maps.isEmpty(chaptersByVol)}" class="text-center py-5 text-muted bg-dark rounded-3 border border-secondary border-opacity-25">
+      <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+      <p>Truyện hiện chưa có chương nào cập nhật.</p>
+    </div>
+  </div>
+
+  <!-- Thảo luận -->
+  <div class="mt-5 mb-5 pt-4 border-top border-secondary border-opacity-25 text-white">
+    <h4 class="fw-bold mb-4 text-uppercase"><i class="bi bi-chat-dots-fill me-2 text-primary"></i>Thảo luận</h4>
+
+    <div sec:authorize="isAuthenticated()" class="mb-5 card bg-dark border-secondary p-3 shadow-sm">
+      <div class="d-flex gap-3">
+        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; min-width: 48px;">
+          <i class="bi bi-person-fill text-white fs-4"></i>
+        </div>
+        <div class="flex-grow-1">
+          <h6 class="text-white mb-2" th:text="${#authentication.name}">Username</h6>
+          <textarea id="mainCommentContent" class="form-control bg-dark text-white border-secondary mb-2" rows="3" placeholder="Nhập bình luận..."></textarea>
+          <div class="text-end">
+            <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" onclick="sendComment()">GỬI</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div sec:authorize="isAnonymous()" class="alert alert-dark border-secondary text-center">
+      Vui lòng <a th:href="@{/login}" class="text-info fw-bold text-decoration-none">Đăng nhập</a> để tham gia thảo luận.
+    </div>
+
+    <div id="commentSection">
+      <div th:each="comment : ${comments}" class="comment-item py-3 mb-3 border-bottom border-secondary border-opacity-25" th:id="'comment-' + ${comment.id}">
+        <div class="d-flex gap-3">
+          <a th:href="@{/profile/{id}(id=${comment.user.id})}">
+            <img th:src="${comment.user.avatarUrl ?: '/images/default-avatar.png'}" class="rounded-circle comment-avatar" width="45" height="45">
+          </a>
+          <div class="flex-grow-1">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <a th:href="@{/profile/{id}(id=${comment.user.id})}" class="text-decoration-none">
+                <span class="text-info fw-bold" th:text="${comment.user.fullName}"></span>
+              </a>
+
+              <div th:if="${#authentication.name == comment.user.userName or #authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                <button class="btn btn-sm btn-link text-warning p-0 me-2" th:onclick="'editComment(' + ${comment.id} + ')'">Sửa</button>
+                <button class="btn btn-sm btn-link text-danger p-0" th:onclick="'deleteComment(' + ${comment.id} + ')'">Xóa</button>
+              </div>
+            </div>
+
+            <p class="text-light mb-2" th:id="'content-' + ${comment.id}" th:text="${comment.content}"></p>
+
+            <div th:id="'edit-area-' + ${comment.id}" style="display:none;">
+              <textarea class="form-control bg-dark text-white border-secondary mb-2" th:id="'input-' + ${comment.id}" th:text="${comment.content}"></textarea>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-primary" th:onclick="'saveEdit(' + ${comment.id} + ')'">Lưu</button>
+                <button class="btn btn-sm btn-secondary" th:onclick="'cancelEdit(' + ${comment.id} + ')'">Hủy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div th:if="${#lists.isEmpty(comments)}" class="text-center text-muted py-4">Chưa có bình luận nào.</div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:inline="javascript">
+  $(document).ready(function() {
+      const token = $("meta[name='_csrf']").attr("content");
+      const header = $("meta[name='_csrf_header']").attr("content");
+
+      // 1. Theo dõi
+      // 1. Theo dõi
+// 1. Theo dõi
+$('#btn-follow').on('click', function() {
+    const storyId = $(this).attr('data-id');
+    const $btn = $(this);
+
+    $.ajax({
+        url: '/follows/toggle/' + storyId,
+        type: 'POST',
+        beforeSend: function(xhr) { if (header && token) xhr.setRequestHeader(header, token); },
+        success: function(response) {
+            // Cập nhật số lượng
+            $('#follow-count').text(response.newCount);
+
+            // CÁCH MỚI: Kiểm tra dựa trên class hiện tại của nút thay vì dựa hoàn toàn vào response
+            if ($btn.hasClass('btn-outline-light')) {
+                // Đang là CHƯA THEO DÕI -> Chuyển sang ĐÃ THEO DÕI
+                $btn.removeClass('btn-outline-light').addClass('btn-primary');
+                $btn.find('i').removeClass('bi-heart').addClass('bi-heart-fill');
+                $('#follow-text').text(' ĐÃ THEO DÕI');
+            } else {
+                // Đang là ĐÃ THEO DÕI -> Chuyển sang CHƯA THEO DÕI
+                $btn.removeClass('btn-primary').addClass('btn-outline-light');
+                $btn.find('i').removeClass('bi-heart-fill').addClass('bi-heart');
+                $('#follow-text').text(' THEO DÕI');
+            }
+        },
+        error: function(xhr) {
+            console.log(xhr.responseText); // Xem lỗi cụ thể trong console F12
+            alert("Đã có lỗi xảy ra!");
+        }
+    });
+});
+  });
+
+  // 2. Gửi bình luận (Nằm ngoài)
+  function sendComment() {
+      const token = $("meta[name='_csrf']").attr("content");
+      const header = $("meta[name='_csrf_header']").attr("content");
+      const content = $('#mainCommentContent').val().trim();
+      const storyId = [[${story.id}]];
+
+      if (!content) return alert("Vui lòng nhập nội dung!");
+
+      $.ajax({
+          url: '/comments/add',
+          type: 'POST',
+          data: { storyId: storyId, content: content },
+          beforeSend: function(xhr) { if (header && token) xhr.setRequestHeader(header, token); },
+          success: function() { location.reload(); },
+          error: function() { alert("Lỗi khi gửi!"); }
+      });
+  }
+
+  // 3. CÁC HÀM NÀY PHẢI NẰM NGOÀI sendComment
+  function deleteComment(id) {
+    if (!confirm("Bạn có chắc chắn muốn xóa bình luận này?")) return;
+
+    // Gửi ID qua URL, đảm bảo id được truyền đúng vào đây
+    $.ajax({
+        url: '/comments/delete/' + id,
+        type: 'GET',
+        success: function() {
+            $('#comment-' + id).fadeOut(300, function() { $(this).remove(); });
+        },
+        error: function(xhr) {
+            console.error(xhr);
+            alert("Lỗi khi xóa: " + xhr.responseText);
+        }
+    });
+}
+
+  function editComment(id) {
+      $('#content-' + id).hide();
+      $('#edit-area-' + id).show();
+  }
+
+  function cancelEdit(id) {
+      $('#content-' + id).show();
+      $('#edit-area-' + id).hide();
+  }
+
+  function saveEdit(id) {
+    const newContent = $('#input-' + id).val();
+    const token = $("meta[name='_csrf']").attr("content");
+    const header = $("meta[name='_csrf_header']").attr("content");
+
+    $.ajax({
+        url: '/comments/update',
+        type: 'POST',
+        // Đảm bảo gửi đúng tên parameter mà Controller mong đợi
+        data: { id: id, content: newContent },
+        beforeSend: function(xhr) { if (header && token) xhr.setRequestHeader(header, token); },
+        success: function() {
+            $('#content-' + id).text(newContent).show();
+            $('#edit-area-' + id).hide();
+        },
+        error: function(xhr) {
+            console.error(xhr);
+            alert("Lỗi khi lưu!");
+        }
+    });
+}
+</script>
+</body>
+</html>

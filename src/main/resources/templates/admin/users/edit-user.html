@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Chỉnh sửa Thành viên</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-header bg-warning text-dark">
+          <h4 class="mb-0">Chỉnh sửa thông tin: <span th:text="${user.userName}"></span></h4>
+        </div>
+        <div class="card-body">
+
+          <form th:action="@{/admin/users/update/{id}(id=${user.id})}" th:object="${user}" method="post">
+
+            <input type="hidden" th:field="*{id}">
+
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" th:field="*{email}" class="form-control">
+              <div id="emailError" class="text-danger mt-1" style="font-size: 13px; display: none;">Email không được để trống và phải đúng định dạng!</div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Vai trò</label>
+              <select name="roleId" class="form-control">
+                <option value="1" th:selected="*{role.id == 1}">ADMIN</option>
+                <option value="2" th:selected="*{role.id == 2}">USER</option>
+              </select>
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <a href="/admin/users" class="btn btn-secondary">Hủy bỏ</a>
+              <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.querySelector('form').addEventListener('submit', function(event) {
+    let emailInput = document.getElementById('email');
+    let email = emailInput.value.trim();
+    let emailError = document.getElementById('emailError');
+    let regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    emailError.style.display = 'none';
+
+    if (email === "") {
+      emailError.innerText = "Email không được để trống!";
+      emailError.style.display = 'block';
+      event.preventDefault();
+    } else if (!regexEmail.test(email)) {
+      emailError.innerText = "Email không đúng định dạng!";
+      emailError.style.display = 'block';
+      event.preventDefault();
+    }
+  });
+</script>
+</body>
+</html>
